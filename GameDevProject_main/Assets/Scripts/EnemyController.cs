@@ -17,6 +17,7 @@ public class EnemyController : MonoBehaviour
     public Transform bulletSpawnRotationReference;
     public float bulletVelocity = 30;
     public float bulletLifetime = 3f;
+    public float despawnRange = 12;
 
     private void Awake()
     {
@@ -60,6 +61,12 @@ public class EnemyController : MonoBehaviour
                         transform.position = nearestNavmesh.position;
                     }
                 }
+            }
+            
+            if (Vector3.Distance(transform.position, target.position) > despawnRange)
+            {
+                Destroy(gameObject);
+                print("Despawned enemy");
             }
 
             enemyReferences.animator.SetBool("Shooting", inRange);

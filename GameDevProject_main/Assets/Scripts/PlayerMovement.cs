@@ -5,18 +5,17 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     private CharacterController controller;
+    public Animator animator;
 
     public float speed = 12f;
     public float gravity = -9.81f * 2;
-
-    Vector3 velocity;
+    
     bool isMoving;
-
-    private Vector3 lastPosition = new Vector3(0f, 0f, 0f);
     // Start is called before the first frame update
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        animator = GetComponentInChildren<Animator>();
     }
 
     // Update is called once per frame
@@ -25,6 +24,8 @@ public class PlayerMovement : MonoBehaviour
         //get inputs
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
+
+        isMoving = x != 0 || z != 0;
 
         //create movement vector
         Vector3 move = transform.right * x + transform.forward * z;
@@ -37,14 +38,12 @@ public class PlayerMovement : MonoBehaviour
         //move player
         controller.Move(move * speed * Time.deltaTime);
 
-        if(lastPosition != gameObject.transform.position && controller.isGrounded)
+        animator.SetBool("Walking", isMoving);
+
+        //left mouse shoot
+        if (Input.GetKeyDown(KeyCode.Mouse0))
         {
-            isMoving = true;
+            animator.SetTrigger("Shoot");
         }
-        else
-        {
-            isMoving = false;
-        }
-        lastPosition = gameObject.transform.position;
     }
 }
