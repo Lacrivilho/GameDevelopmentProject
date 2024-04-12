@@ -7,8 +7,8 @@ using UnityEngine.AI;
 
 public class Gun : MonoBehaviour
 {
-    public GameObject bulletPrefab;
     public Transform bulletSpawn;
+    public ParticleSystem muzzleflash;
 
     public float damage = 10f;
     public float range = 100f;
@@ -17,6 +17,11 @@ public class Gun : MonoBehaviour
     public Camera viewCam;
 
     public LayerMask layerMask;
+
+    public Vector3 aimingOffset;
+    public float aimingDuration = 0.1f;
+    private Vector3 initialGunPosition;
+    private bool aiming = false;
 
     /* Update is called once per frame
     void Update()
@@ -28,8 +33,16 @@ public class Gun : MonoBehaviour
         }
     }*/
 
+    void Start()
+    {
+        initialGunPosition = transform.localPosition;
+    }
+
     public void FireWeapon()
     {
+        ParticleSystem flashInstance = Instantiate(muzzleflash, bulletSpawn.position, bulletSpawn.rotation);
+        Destroy(flashInstance, 2);
+
         RaycastHit hit;
         if(Physics.Raycast(viewCam.transform.position, viewCam.transform.forward, out hit, range, layerMask))
         {
@@ -70,5 +83,35 @@ public class Gun : MonoBehaviour
                 Destroy(hit.transform.gameObject.transform.root.gameObject, 5);
             }
         }
+    }
+
+    public void TransitionGunPosition(int aimInt)
+    {
+        bool aim = aimInt == 1;
+        if(aim != aiming)
+        {
+            StartCoroutine(TransitionGunPositionNumerator(aim));
+            aiming = aim;
+        }
+    }
+
+    private IEnumerator TransitionGunPositionNumerator(bool aim)
+    {
+        float elapsedTime = 0f;
+        Vector3 start = transform.localPosition;
+        Vector3 end = aim ? initialGunPosition + aimingOffset : initialGunPosition;
+
+        while (elapsedTime < aimingDuration)
+        {
+            transform.localPosition = Vector3.Lerp(start, end, elapsedTime / aimingDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        transform.localPosition = end;
+    }
+
+    public void unblockShootingRe()
+    {
+        PlayerMovement.unblockShooting();
     }
 }
