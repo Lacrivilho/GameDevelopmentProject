@@ -66,9 +66,11 @@ public class RoomsGenerator : MonoBehaviour
 
                     // Get a random room prefab from the array
                     GameObject randomRoomPrefab = roomPrefabs[Random.Range(0, roomPrefabs.Length)];
-
+                        
                     // Instantiate the room at the empty's position and rotation
                     GameObject newRoom = Instantiate(randomRoomPrefab);
+                        
+                    
 
                     // Get a random empty child transform
                     int childIndex = Random.Range(0, newRoom.transform.childCount);
@@ -220,5 +222,10 @@ public class RoomsGenerator : MonoBehaviour
 
         // Resize the array to remove the last element
         System.Array.Resize(ref adjacentRooms, adjacentRooms.Length - 1);
+    }
+
+    public GameObject getCurrentRoom()
+    {
+        return currentRoom;
     }
 }

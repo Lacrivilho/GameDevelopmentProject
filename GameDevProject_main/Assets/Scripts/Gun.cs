@@ -9,10 +9,16 @@ public class Gun : MonoBehaviour
 {
     public Transform bulletSpawn;
     public ParticleSystem muzzleflash;
+    public GameObject impact;
+    public GameObject roomController;
+    public GameObject bloodProjector;
 
     public float damage = 10f;
     public float range = 100f;
     public float impactForce = 2f;
+    public float bulletRays = 10;
+    public float bulletSpread = 1;
+    public float bloodRange = 5;
 
     public Camera viewCam;
 
@@ -41,13 +47,25 @@ public class Gun : MonoBehaviour
     public void FireWeapon()
     {
         ParticleSystem flashInstance = Instantiate(muzzleflash, bulletSpawn.position, bulletSpawn.rotation);
-        Destroy(flashInstance, 2);
+
+        for(int i = 0; i < bulletRays; i++)
+        {
+            BulletRay();
+        }
+    }
+
+    void BulletRay()
+    {
+        // Calculate spread:
+        float x = UnityEngine.Random.Range(-bulletSpread, bulletSpread);
+        float y = UnityEngine.Random.Range(-bulletSpread, bulletSpread);
+
+        Vector3 direction = viewCam.transform.forward + new Vector3(x, y, 0);
 
         RaycastHit hit;
-        if(Physics.Raycast(viewCam.transform.position, viewCam.transform.forward, out hit, range, layerMask))
+        if (Physics.Raycast(viewCam.transform.position, direction, out hit, range, layerMask))
         {
-            print(hit.transform.name);
-            if (hit.transform.gameObject.layer == 7)
+            if (hit.transform.gameObject.layer == 7) //Enemy
             {
                 hit.transform.gameObject.GetComponentInParent<Animator>().enabled = false;
                 hit.transform.gameObject.GetComponentInParent<NavMeshAgent>().enabled = false;
@@ -58,7 +76,7 @@ public class Gun : MonoBehaviour
 
                 if (hit.transform.GetComponent<Rigidbody>())
                 {
-                    hit.transform.GetComponent<Rigidbody>().AddForce(viewCam.transform.forward * impactForce, ForceMode.Impulse);
+                    hit.transform.GetComponent<Rigidbody>().AddForce(-viewCam.transform.forward * impactForce, ForceMode.Impulse);
                 }
                 else
                 {
@@ -68,7 +86,8 @@ public class Gun : MonoBehaviour
 
                     foreach (Transform child in children)
                     {
-                        if (child.GetComponent<Rigidbody>()) {
+                        if (child.GetComponent<Rigidbody>())
+                        {
                             if (Vector3.Distance(child.position, hit.point) < childDistance)
                             {
                                 childDistance = Vector3.Distance(child.position, hit.point);
@@ -77,10 +96,25 @@ public class Gun : MonoBehaviour
                         }
                     }
 
-                    closestChild.GetComponent<Rigidbody>().AddForce(viewCam.transform.forward * impactForce, ForceMode.Impulse);
+                    closestChild.GetComponent<Rigidbody>().AddForce(-viewCam.transform.forward * impactForce, ForceMode.Impulse);
                 }
 
-                Destroy(hit.transform.gameObject.transform.root.gameObject, 5);
+                Destroy(hit.transform.gameObject.transform.root.gameObject, 8);
+
+                RaycastHit secondaryHit;
+                if(Physics.Raycast(hit.point, direction, out secondaryHit, bloodRange, layerMask))
+                {
+                    float randomRotation = UnityEngine.Random.Range(0f, 360f);
+                    Quaternion rotation = Quaternion.Euler(0f, 0f, randomRotation);
+
+                    GameObject splatter = Instantiate(bloodProjector, secondaryHit.point, Quaternion.LookRotation(direction) * rotation);
+                    splatter.transform.parent = secondaryHit.transform;
+                }
+            }
+            else if(hit.transform.gameObject.layer == 8) //Hallways
+            {
+                GameObject impactSpot = Instantiate(impact, hit.point, Quaternion.LookRotation(-hit.normal));
+                impactSpot.transform.parent = roomController.GetComponent<RoomsGenerator>().getCurrentRoom().transform;
             }
         }
     }

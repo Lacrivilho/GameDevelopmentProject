@@ -18,15 +18,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 22c79dd54fa6fb34c964ec3a4fad7f65, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 15.84
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 22c79dd54fa6fb34c964ec3a4fad7f65, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 1.15
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 22c79dd54fa6fb34c964ec3a4fad7f65, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -17.13
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 22c79dd54fa6fb34c964ec3a4fad7f65, type: 3}
       propertyPath: m_LocalRotation.w
@@ -112,6 +112,18 @@ PrefabInstance:
       propertyPath: m_Intensity
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: 5701795859802828481, guid: 22c79dd54fa6fb34c964ec3a4fad7f65, type: 3}
+      propertyPath: m_RenderMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5701795859802828481, guid: 22c79dd54fa6fb34c964ec3a4fad7f65, type: 3}
+      propertyPath: m_Shadows.m_Type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5701795859802828481, guid: 22c79dd54fa6fb34c964ec3a4fad7f65, type: 3}
+      propertyPath: m_BounceIntensity
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6800325588945520740, guid: 22c79dd54fa6fb34c964ec3a4fad7f65, type: 3}
       propertyPath: m_Range
       value: 5
@@ -145,7 +157,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 8174907068477135312, guid: 22c79dd54fa6fb34c964ec3a4fad7f65, type: 3}
+    - {fileID: -3483231724154146205, guid: 22c79dd54fa6fb34c964ec3a4fad7f65, type: 3}
+    - {fileID: 3323731572880017306, guid: 22c79dd54fa6fb34c964ec3a4fad7f65, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 22c79dd54fa6fb34c964ec3a4fad7f65, type: 3}
