@@ -15,12 +15,16 @@ public class EnemyController : MonoBehaviour
     public Transform bulletSpawn;
     public Transform rayCastOrigin;
     public ParticleSystem muzzleflash;
-    public int damage = 5;
+    public AudioSource shotSource;
     public float despawnRange = 12;
+    
+    int damage;
 
     private void Awake()
     {
         enemyReferences = GetComponent<EnemyReferences>();
+
+        damage = GameManager.Instance.enemyDamage;
     }
 
     // Start is called before the first frame update
@@ -112,6 +116,7 @@ public class EnemyController : MonoBehaviour
     {
         yield return new WaitForEndOfFrame();
         ParticleSystem flash = Instantiate(muzzleflash, bulletSpawn.position, bulletSpawn.rotation);
+        shotSource.Play();
         Destroy(flash, 1);
 
         RaycastHit hit;

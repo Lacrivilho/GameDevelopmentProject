@@ -6,6 +6,7 @@ public class PlayerMovement : MonoBehaviour
 {
     private CharacterController controller;
     public Animator animator;
+    public GameObject roomController;
 
     public float runSpeed = 6f;
     public float aimSpeed = 2f;
@@ -13,7 +14,12 @@ public class PlayerMovement : MonoBehaviour
     
     bool isMoving;
     bool isAiming;
-    static bool shootingBlocked = false;
+    static bool shootingBlocked;
+
+    private void Awake()
+    {
+        shootingBlocked = false;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -60,6 +66,17 @@ public class PlayerMovement : MonoBehaviour
         //right mouse aim
         isAiming = Input.GetKey(KeyCode.Mouse1);
         animator.SetBool("Aiming", isAiming);
+
+        //Check if falling out of world
+        if(controller.velocity.y < -12)
+        {
+            transform.position = roomController.GetComponent<RoomsGenerator>().getCurrentRoom().transform.position;
+            UnityEngine.AI.NavMeshHit nearestNavmesh;
+            if (UnityEngine.AI.NavMesh.SamplePosition(transform.position, out nearestNavmesh, 100, -1))
+            {
+                transform.position = nearestNavmesh.position;
+            }
+        }
     }
 
     public static void unblockShooting()

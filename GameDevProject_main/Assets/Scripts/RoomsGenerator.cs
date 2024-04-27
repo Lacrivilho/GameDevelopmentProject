@@ -1,3 +1,5 @@
+using LlockhamIndustries.ExtensionMethods;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.AI.Navigation;
@@ -8,21 +10,36 @@ using UnityEngine.AI;
 
 public class RoomsGenerator : MonoBehaviour
 {
-    public GameObject[] roomPrefabs;
+    [SerializeField] private GameObject[] roomPrefabsArray; // Serialized array visible in the Inspector
+    private List<GameObject> roomPrefabs; // List that will be used at runtime
+
+    public GameObject exitPrefab;
 
     public Transform playerTransform;
 
     public NavMeshSurface navSurface;
 
     private GameObject currentRoom;
-    private GameObject[] adjacentRooms = new GameObject[0];
+    private List<GameObject> adjacentRooms = new List<GameObject>();
 
     private float lastNavmeshUpdate = 0f;
-    private float navmeshUpdateDelay = 10;
+    private float navmeshUpdateDelay = 5;
+
+    public GameObject ammoBox;
+    public string ammoName = "AmmoPack";
+    public GameObject healthBox;
+    public string healthName = "HealthPack";
 
     // Start is called before the first frame update
     void Start()
     {
+        roomPrefabs = new List<GameObject>(roomPrefabsArray);
+
+        if (GameManager.Instance.spawnExit)
+        {
+            StartCoroutine(spawnExit(GameManager.Instance.exitSpawnDelay));
+        }
+
         currentRoom = Instantiate(roomPrefabs[0]);
 
         for(int i = 0; i < currentRoom.transform.childCount; i++)
@@ -48,7 +65,7 @@ public class RoomsGenerator : MonoBehaviour
         if(lastNavmeshUpdate + navmeshUpdateDelay < Time.time) {
             NavMesh.RemoveAllNavMeshData();
             navSurface.BuildNavMesh();
-
+            
             lastNavmeshUpdate = Time.time;
         }
     }
@@ -65,19 +82,23 @@ public class RoomsGenerator : MonoBehaviour
                     Transform emptyTransform = currentRoom.transform.GetChild(i);
 
                     // Get a random room prefab from the array
-                    GameObject randomRoomPrefab = roomPrefabs[Random.Range(0, roomPrefabs.Length)];
+                    GameObject randomRoomPrefab = roomPrefabs[UnityEngine.Random.Range(0, roomPrefabs.Count)];
                         
                     // Instantiate the room at the empty's position and rotation
                     GameObject newRoom = Instantiate(randomRoomPrefab);
-                        
-                    
+
+
 
                     // Get a random empty child transform
-                    int childIndex = Random.Range(0, newRoom.transform.childCount);
-                    while (!newRoom.transform.GetChild(childIndex).name.StartsWith("Passage"))
+                    List<int> eligibleIndexes = new List<int>();
+                    for (int j = 0; j < newRoom.transform.childCount; j++)
                     {
-                        childIndex = Random.Range(0, newRoom.transform.childCount);
+                        if (newRoom.transform.GetChild(j).name.StartsWith("Passage"))
+                        {
+                            eligibleIndexes.Add(j);
+                        }
                     }
+                    int childIndex = eligibleIndexes[UnityEngine.Random.Range(0, eligibleIndexes.Count)];
                     Transform randomEmpty = newRoom.transform.GetChild(childIndex);
 
                     //Quaternion targetRotation = Quaternion.FromToRotation(randomEmpty.up, Vector3.back);
@@ -89,7 +110,7 @@ public class RoomsGenerator : MonoBehaviour
 
                     newRoom.transform.position = emptyTransform.position - offset;
 
-                    //Save information on which passages are used
+                    //Save information on which passages are used and instantiate health and ammo refills
                     for (int j = 0; j < newRoom.transform.childCount; j++)
                     {
                         if (newRoom.transform.GetChild(j).name.StartsWith("Passage"))
@@ -100,11 +121,27 @@ public class RoomsGenerator : MonoBehaviour
                                 passageController.connectPassage();
                             }
                         }
+                        else if (newRoom.transform.GetChild(j).name.StartsWith(ammoName))
+                        {
+                            float randomValue = UnityEngine.Random.value;
+                            if (randomValue < GameManager.Instance.ammoPackChance)
+                            {
+                                Instantiate(ammoBox, newRoom.transform.GetChild(j));
+                            }
+                        }
+                        else if (newRoom.transform.GetChild(j).name.StartsWith(healthName))
+                        {
+                            float randomValue = UnityEngine.Random.value;
+                            if (randomValue < GameManager.Instance.healthPackChance)
+                            {
+                                Instantiate(healthBox, newRoom.transform.GetChild(j));
+                            }
+                        }
                     }
                     currentRoom.transform.GetChild(i).GetComponent<PassageController>().connectPassage();
 
                     // Add the new room to the adjacentRooms array
-                    AddToAdjacentRooms(newRoom);
+                    adjacentRooms.Add(newRoom);
 
                     NavMesh.RemoveAllNavMeshData();
                     navSurface.BuildNavMesh();
@@ -113,34 +150,26 @@ public class RoomsGenerator : MonoBehaviour
         }
     }
 
-    void AddToAdjacentRooms(GameObject newRoom)
-    {
-        // Resize the array and add the new room to the end
-        System.Array.Resize(ref adjacentRooms, adjacentRooms.Length + 1);
-        adjacentRooms[adjacentRooms.Length - 1] = newRoom;
-    }
-
     void MoveToRoom()
     {
         // Check if there are adjacent rooms
-        if (adjacentRooms.Length > 0)
+        if (adjacentRooms.Count > 0)
         {
             // Check all adjacent rooms until player is found
-            int i = 0;
             foreach(GameObject room in adjacentRooms)
             {
                 if (room.GetComponent<Collider>().bounds.Contains(playerTransform.position + new Vector3(0, 1, 0)))
                 {
 
-                    RemoveFromAdjacentRooms(i);
+                    adjacentRooms.Remove(room);
 
                     ClearAdjacentRooms();
                     ClearPassages(currentRoom);
                     ConnectNearestPassage(currentRoom, playerTransform.position);
 
                     // Add the previous currentRoom to adjacentRooms
-                    AddToAdjacentRooms(currentRoom);
-                    
+                    adjacentRooms.Add(currentRoom);
+
                     // Move the player to the new currentRoom
                     currentRoom = room;
 
@@ -149,7 +178,6 @@ public class RoomsGenerator : MonoBehaviour
 
                     break;
                 }
-                i++;
             }
         }
         else
@@ -162,10 +190,20 @@ public class RoomsGenerator : MonoBehaviour
     {
         foreach (GameObject room in adjacentRooms)
         {
+            Bounds roomBounds = room.GetComponent<MeshCollider>().bounds;
+            Collider[] collidersInRoom = Physics.OverlapBox(roomBounds.center, roomBounds.extents);
+            
+            foreach (Collider collider in collidersInRoom)
+            {
+                if (!collider.IsDestroyed() && collider.transform.root.CompareTag("Enemy"))
+                {
+                    Destroy(collider.transform.root.gameObject);
+                }
+            }
             Destroy(room);
         }
 
-        adjacentRooms = new GameObject[0];
+        adjacentRooms.Clear();
     }
 
     void ClearPassages(GameObject room)
@@ -208,24 +246,17 @@ public class RoomsGenerator : MonoBehaviour
 
     void RemoveFromAdjacentRooms(int index)
     {
-        if (index < 0 || index >= adjacentRooms.Length)
-        {
-            Debug.LogError("Index out of range for removing from adjacentRooms.");
-            return;
-        }
-
-        // Shift elements to the left to remove the room at the specified index
-        for (int i = index; i < adjacentRooms.Length - 1; i++)
-        {
-            adjacentRooms[i] = adjacentRooms[i + 1];
-        }
-
-        // Resize the array to remove the last element
-        System.Array.Resize(ref adjacentRooms, adjacentRooms.Length - 1);
+        adjacentRooms.RemoveAt(index);
     }
 
     public GameObject getCurrentRoom()
     {
         return currentRoom;
+    }
+
+    IEnumerator spawnExit(int timeInSeconds)
+    {
+        yield return new WaitForSeconds(timeInSeconds);
+        roomPrefabs.Add(exitPrefab);
     }
 }

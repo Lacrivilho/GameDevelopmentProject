@@ -12,6 +12,9 @@ public class Gun : MonoBehaviour
     public GameObject impact;
     public GameObject roomController;
     public GameObject bloodProjector;
+    public AudioSource shotSource;
+    public AudioSource pumpSource;
+    PlayerStatus playerStatus;
 
     public float damage = 10f;
     public float range = 100f;
@@ -42,15 +45,25 @@ public class Gun : MonoBehaviour
     void Start()
     {
         initialGunPosition = transform.localPosition;
+
+        playerStatus = transform.root.GetComponent<PlayerStatus>();
     }
 
     public void FireWeapon()
     {
-        ParticleSystem flashInstance = Instantiate(muzzleflash, bulletSpawn.position, bulletSpawn.rotation);
 
-        for(int i = 0; i < bulletRays; i++)
+        if (playerStatus.bulletsLeft())
         {
-            BulletRay();
+            ParticleSystem flashInstance = Instantiate(muzzleflash, bulletSpawn.position, bulletSpawn.rotation);
+
+            playerStatus.shootBullet();
+
+            shotSource.Play();
+
+            for (int i = 0; i < bulletRays; i++)
+            {
+                BulletRay();
+            }
         }
     }
 
@@ -67,6 +80,12 @@ public class Gun : MonoBehaviour
         {
             if (hit.transform.gameObject.layer == 7) //Enemy
             {
+                // count kill
+                if (hit.transform.gameObject.GetComponentInParent<Animator>().enabled)
+                {
+                    GameManager.Instance.killScore++;
+                }
+
                 hit.transform.gameObject.GetComponentInParent<Animator>().enabled = false;
                 hit.transform.gameObject.GetComponentInParent<NavMeshAgent>().enabled = false;
                 hit.transform.gameObject.GetComponentInParent<EnemyController>().enabled = false;
@@ -147,5 +166,10 @@ public class Gun : MonoBehaviour
     public void unblockShootingRe()
     {
         PlayerMovement.unblockShooting();
+    }
+
+    public void pumpSound()
+    {
+        pumpSource.Play();
     }
 }

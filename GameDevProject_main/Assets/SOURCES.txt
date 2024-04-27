@@ -1,0 +1,58 @@
+-Textures.com:
+All textures with a filename starting with "TexturesCom", as well as the exit door texture, which is based on the wood texture.
+
+-AmbientCG:
+Textures starting with:
+concrete_wall_008
+Fence_alpha
+Fence_black
+Fence007B
+grey_plaster_02
+metal_plate
+
+-Other textures:
+
+Foshan-Factory-Fabric-Staff-Office-Chair-Full-Set-Chairs-Parts.png is from a google search, unfortunately I did not write down what website.
+Then again, it seems the company's name is in the file-name.
+
+kindpng_418143.png I've had on my PC for probably half a decade now, no idea where I got it from. Judging by the file-name possibly a site called kindpng.
+This was also used in some of the UI elements.
+
+-All other textures are self made, as well as all 3D models.
+
+
+-----------------------------------------+
+
+
+Since Unity's decal system is not available in built-in render pipeline and the projector system is extremely outdated, I've had to use This:
+https://github.com/EricFreeman/DynamicDecals
+It is referneced again in the relevant folder.
+
+
+-----------------------------------------+
+
+
+I also modified and used a bullet impact and muzzle-flash particle effect from Unity's Particle Pack:
+https://assetstore.unity.com/packages/p/particle-pack-127325
+This includes the relevant materials.
+
+
+-----------------------------------------+
+
+
+As for the code, I followed a number of tutorials, mainly these:
+https://youtu.be/DX7HyN7oJjE?si=Q1trjI-s2kf33bOb
+https://youtu.be/DInV-jHm9rk?si=h09xnNyoOzUdWBFC
+https://youtu.be/THnivyG0Mvo?si=b9oP_MHSJpms_or7
+https://youtu.be/SHguQkJQFhw?si=6kEdb1r7VoeRf9LU
+https://youtu.be/rs7xUi9BqjE?si=uVpqEY664AOB0M8d
+
+I might have reused some of their code, but always modified and reworked it to fit my own purposes and scenes, so it wasn't just copied.
+I also used ChatGPT for general architecture and "How do I do this thing in Unity" kind of questions, as well as bugfixing, but also 
+not straight for writing code. All code was written out by me.
+
+
+-----------------------------------------+
+
+
+I think that's it, I hope I haven't forgotten anything. If I did, I apologize, it was an honest mistake and not an attempt to cheat.

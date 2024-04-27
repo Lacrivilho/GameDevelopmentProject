@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
 using UnityEngine.Video;
@@ -9,7 +10,7 @@ public class PlayerStatus : MonoBehaviour
 {
     public int maxHealth = 100;
     public int maxAmmo = 50;
-    public int health;
+    int health;
     public int ammo;
 
     public float vignetteScaleInit = 2.244f;
@@ -50,15 +51,15 @@ public class PlayerStatus : MonoBehaviour
         {
             ammoObject.GetComponent<RawImage>().texture = ammoStates[0];
         }
-        else if (ammo < 10)
+        else if (ammo < 5)
         {
             ammoObject.GetComponent<RawImage>().texture = ammoStates[1];
         }
-        else if(ammo < 25)
+        else if(ammo < 10)
         {
             ammoObject.GetComponent<RawImage>().texture = ammoStates[2];
         }
-        else if(ammo < 40)
+        else if(ammo < 15)
         {
             ammoObject.GetComponent<RawImage>().texture = ammoStates[3];
         }
@@ -98,7 +99,51 @@ public class PlayerStatus : MonoBehaviour
             StopCoroutine(vignetteAnimation);
             vignetteAnimation = StartCoroutine(ScaleObjectOverTime(vignette, vignetteScaleInit, vignetteScaleBig, 0.2f));
         }
+
+        if(health < 0)
+        {
+            UnityEngine.Cursor.lockState = CursorLockMode.None;
+            UnityEngine.Cursor.visible = true;
+            GameManager.Instance.win = false;
+            GameManager.Instance.gameOver = true;
+            SceneManager.LoadScene(0);
+        }
         
+    }
+
+    public void heal(int ammount)
+    {
+        health += ammount;
+        if (health > maxHealth)
+        {
+            health = maxHealth;
+        }
+    }
+
+    public bool bulletsLeft()
+    {
+        if(ammo > 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public void shootBullet()
+    {
+        ammo--;
+    }
+
+    public void reload(int ammount)
+    {
+        ammo += ammount;
+        if(ammo > maxAmmo)
+        {
+            ammo = maxAmmo;
+        }
     }
 
     IEnumerator ScaleObjectOverTime(GameObject obj, float smallScale, float bigScale, float duration)
